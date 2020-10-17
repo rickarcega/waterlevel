@@ -1,6 +1,6 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
- 
+
 #include <Ultrasonic.h>
 
 #define pino_trigger 9
@@ -14,48 +14,57 @@ Ultrasonic ultrasonic(pino_trigger, pino_echo);
 LiquidCrystal_I2C lcd(endereco, colunas, linhas);
 
 void setup() {
+
+
+  Serial.begin(9600);
   lcd.init();
   lcd.backlight();
-  lcd.clear(); 
+  lcd.clear();
+
 }
 
 void loop() {
 
   int cmMsec;
-  int perc;
- 
+  long perc;
+  long litersAvailable = 0;
+
   long microsec = ultrasonic.timing();
   cmMsec = ultrasonic.convert(microsec, Ultrasonic::CM);
 
- 
- // 16  - 0
- // 22  - 10
- // 33  - 50
- // 83  - 100
-  
+
   perc = ((50 - cmMsec ) * 100) / 40;
 
-  lcd.clear(); 
-  lcd.setCursor(0, 0); 
-  lcd.print("C.A 01: " );
-  lcd.setCursor(0, 1); 
-  lcd.print("C.A 02: " );
-  lcd.print(" -- - --");
-  
-  lcd.setCursor(9, 0); 
-                
-    
-  if(perc > 300 || perc < 0){
-    lcd.print("-- - --");
-  }else{
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Caixa AG:   ");
+  lcd.setCursor(0, 1);
+  lcd.print("Litros Dis: ");
 
-    lcd.print("- ");
+  //litersAvailable = (660 * int(perc)) / 100; //660 total ammount of two water boxes.
+
+  litersAvailable = (perc * 660) / 100;
+
+  long litersAvailableAux = 660 - ((litersAvailable - 660) * -1);
+
+  lcd.print(litersAvailableAux);
+  lcd.print("L");
+
+  if (perc > 300 || perc < 0
+  && litersAvailableAux > 660 || litersAvailableAux < 0) {
+    lcd.setCursor(9, 0);
+    lcd.print(" - - -");
+
+    lcd.setCursor(11, 1);
+    lcd.print(" - -  ");
+    
+  } else {
+    lcd.setCursor(9, 0);
+    lcd.print("   ");
     lcd.print(perc);
     lcd.print("%" );
-    lcd.print(" -");
   }
-  
-  
-  delay(3000); 
+
+  delay(2000);
 
 }
